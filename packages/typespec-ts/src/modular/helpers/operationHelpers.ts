@@ -532,6 +532,7 @@ function getLroOnlyOperationFunction(
   )}, {
     updateIntervalInMs: ${optionalParamName}?.updateIntervalInMs,
     abortSignal: ${optionalParamName}?.abortSignal,
+    skipFinalGet: ${optionalParamName}?.skipFinalGet,
     getInitialResponse: () => _${name}Send(${parameters
       .map((p) => p.name)
       .join(", ")}),

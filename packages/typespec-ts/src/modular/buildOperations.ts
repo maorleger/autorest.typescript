@@ -180,12 +180,22 @@ export function buildOperationOptions(
   const options: SdkMethodParameter[] = [...optionalParameters];
 
   const name = getOperationOptionsName(method, true);
-  const lroOptions = {
-    name: "updateIntervalInMs",
-    type: "number",
-    hasQuestionToken: true,
-    docs: ["Delay to wait until next poll, in milliseconds."]
-  };
+  const lroOptions = [
+    {
+      name: "updateIntervalInMs",
+      type: "number",
+      hasQuestionToken: true,
+      docs: ["Delay to wait until next poll, in milliseconds."]
+    },
+    {
+      name: "skipFinalGet",
+      type: "boolean",
+      hasQuestionToken: true,
+      docs: [
+        "Skip the final GET request to check the status of the operation. This is useful if you don't care about the final status of the operation."
+      ]
+    }
+  ];
 
   // handle optional body parameter
   // if (operation.operation.bodyParam?.optional === true) {
@@ -198,7 +208,7 @@ export function buildOperationOptions(
     name,
     isExported: true,
     extends: [operationOptionsReference],
-    properties: (isLroOnlyOperation(operation) ? [lroOptions] : []).concat(
+    properties: (isLroOnlyOperation(operation) ? [...lroOptions] : []).concat(
       options.map((p) => {
         return {
           docs: getDocsFromDescription(p.doc),
