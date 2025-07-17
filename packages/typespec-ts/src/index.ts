@@ -92,6 +92,7 @@ import { provideSdkTypes } from "./framework/hooks/sdkTypes.js";
 import { transformRLCModel } from "./transform/transform.js";
 import { transformRLCOptions } from "./transform/transfromRLCOptions.js";
 import { emitSamples } from "./modular/emitSamples.js";
+import { buildPackageFileWithAlloy, shouldUseAlloyPackageJson } from "./alloy/index.js";
 
 export * from "./lib.js";
 
@@ -461,9 +462,12 @@ export async function $onEmit(context: EmitContext) {
           };
         }
       }
-      commonBuilders.push((model) =>
-        buildPackageFile(model, modularPackageInfo)
-      );
+      commonBuilders.push((model) => {
+        if (shouldUseAlloyPackageJson(model)) {
+          return buildPackageFileWithAlloy(model, modularPackageInfo);
+        }
+        return buildPackageFile(model, modularPackageInfo);
+      });
       commonBuilders.push(buildTsConfig);
       if (option.azureSdkForJs) {
         commonBuilders.push(buildTsSrcConfig);

@@ -252,6 +252,12 @@ export interface RLCOptions {
   ignorePropertyNameNormalize?: boolean;
   ignoreEnumMemberNameNormalize?: boolean;
   compatibilityQueryMultiFormat?: boolean;
+  /**
+   * Enable Alloy-based package.json generation
+   * - true: Use Alloy components for package.json generation
+   * - false or undefined: Use traditional package.json generation
+   */
+  useAlloyPackageJson?: boolean;
   typespecTitleMap?: Record<string, string>;
   hasSubscriptionId?: boolean;
   //TODO should remove this after finish the release tool test

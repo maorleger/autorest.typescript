@@ -123,6 +123,8 @@
   },
   "dependencies": {
     "@azure-tools/rlc-common": "workspace:^0.42.0",
+    "@alloy-js/core": "^0.1.0",
+    "@alloy-js/typescript": "^0.1.0",
     "fs-extra": "^11.1.0",
     "lodash": "^4.17.21",
     "prettier": "^3.3.3",
