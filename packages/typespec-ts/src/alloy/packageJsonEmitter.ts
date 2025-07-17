@@ -44,3 +44,21 @@ export function shouldUseAlloyPackageJson(model: RLCModel): boolean {
   // Default to false for now (opt-in)
   return false;
 }
+
+/**
+ * Demonstrates Alloy package.json generation
+ */
+export function demoAlloyPackageJson(): string {
+  // Create a mock RLCModel for demonstration
+  const mockModel: RLCModel = {
+    srcPath: "src",
+    paths: {},
+    options: {
+      title: "Demo Package",
+      useAlloyPackageJson: true
+    }
+  } as any;
+
+  const result = buildPackageFileWithAlloy(mockModel);
+  return result?.content || "// Failed to generate package.json";
+}

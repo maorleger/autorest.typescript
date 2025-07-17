@@ -2,68 +2,112 @@
 // Licensed under the MIT License.
 
 /**
- * Demo script to show Alloy-based package.json generation
- * This is for demonstration purposes only
+ * Demonstration of Alloy-based code generation for TypeScript clients
+ * This file showcases the three main components we've implemented:
+ * 1. ClientInterface - Generates client interface definitions
+ * 2. ClientClass - Generates client class implementations
+ * 3. OperationFunction - Generates operation functions with LRO and paging support
  */
 
-import { buildPackageFileWithAlloy } from "./packageJsonEmitter.js";
+import { demoAlloyPackageJson } from "./packageJsonEmitter.js";
+import { demoAlloyClientInterface } from "./clientDefinitionsEmitter.js";
+import { demoAlloyClientClass } from "./classicalClientEmitter.js";
+import {
+  demoAlloyOperationFunction,
+  demoAlloyLroOperationFunction,
+  demoAlloyPagingOperationFunction
+} from "./operationEmitter.js";
 
-// Create a simple mock model for demonstration
-const demoModel = {
-  libraryName: "DemoClient",
-  srcPath: "src",
-  paths: {},
-  schemas: [],
-  importInfo: {
-    internalImports: {} as any,
-    runtimeImports: {} as any
-  },
-  options: {
-    packageDetails: {
-      name: "@azure-rest/demo-client",
-      version: "1.0.0-beta.1",
-      description: "Demo client generated with Alloy components"
-    },
-    moduleKind: "esm" as const,
-    generateTest: true,
-    generateSample: true,
-    azureSdkForJs: true,
-    useAlloyPackageJson: true
-  }
-} as any;
-
-// Demo options
-const demoOptions = {
-  exports: {
-    ".": "./dist/index.js",
-    "./models": "./dist/models/index.js"
-  },
-  dependencies: {
-    "custom-package": "^1.0.0"
-  },
-  clientContextPaths: ["src/client.ts", "src/models/index.ts"]
-};
-
-export function runDemo() {
-  console.log("=== Alloy Package.json Generation Demo ===");
+/**
+ * Generates a complete demonstration of all Alloy components
+ * @param clientName - The name of the client to generate
+ * @returns Object containing all generated code samples
+ */
+export function generateAlloyDemo(clientName: string = "UserManagement"): AlloyDemoResult {
+  console.log(`🚀 Generating Alloy demo for ${clientName}...`);
   
-  try {
-    const result = buildPackageFileWithAlloy(demoModel, demoOptions);
-    
-    if (result) {
-      console.log("\n✅ Successfully generated package.json with Alloy!");
-      console.log("📄 File path:", result.path);
-      console.log("📦 Content preview:");
-      console.log(result.content);
-    } else {
-      console.log("❌ Failed to generate package.json");
-    }
-  } catch (error) {
-    console.error("❌ Error running demo:", error);
-  }
+  const packageJson = demoAlloyPackageJson();
+  const clientInterface = demoAlloyClientInterface(clientName);
+  const clientClass = demoAlloyClientClass(clientName);
+  const operationFunction = demoAlloyOperationFunction("getUser");
+  const lroOperationFunction = demoAlloyLroOperationFunction("createUser");
+  const pagingOperationFunction = demoAlloyPagingOperationFunction("listUsers");
+
+  return {
+    packageJson,
+    clientInterface,
+    clientClass,
+    operationFunction,
+    lroOperationFunction,
+    pagingOperationFunction
+  };
 }
 
-// Run the demo if this file is executed directly
-if (require.main === module) {
-  runDemo();
+/**
+ * Result interface for the Alloy demo
+ */
+export interface AlloyDemoResult {
+  packageJson: string;
+  clientInterface: string;
+  clientClass: string;
+  operationFunction: string;
+  lroOperationFunction: string;
+  pagingOperationFunction: string;
+}
+
+/**
+ * Prints the Alloy demo results to the console
+ * @param result - The demo result to print
+ */
+export function printAlloyDemo(result: AlloyDemoResult): void {
+  console.log("📦 Package.json (Alloy):");
+  console.log("=" + "=".repeat(50));
+  console.log(result.packageJson);
+  console.log();
+
+  console.log("🔧 Client Interface (Alloy):");
+  console.log("=" + "=".repeat(50));
+  console.log(result.clientInterface);
+  console.log();
+
+  console.log("🏗️ Client Class (Alloy):");
+  console.log("=" + "=".repeat(50));
+  console.log(result.clientClass);
+  console.log();
+
+  console.log("⚡ Operation Function (Alloy):");
+  console.log("=" + "=".repeat(50));
+  console.log(result.operationFunction);
+  console.log();
+
+  console.log("🔄 LRO Operation Function (Alloy):");
+  console.log("=" + "=".repeat(50));
+  console.log(result.lroOperationFunction);
+  console.log();
+
+  console.log("📄 Paging Operation Function (Alloy):");
+  console.log("=" + "=".repeat(50));
+  console.log(result.pagingOperationFunction);
+  console.log();
+}
+
+/**
+ * Runs the complete Alloy demo
+ * @param clientName - The name of the client to generate
+ */
+export function runAlloyDemo(clientName: string = "UserManagement"): void {
+  const result = generateAlloyDemo(clientName);
+  printAlloyDemo(result);
+  
+  console.log("✅ Alloy demo completed successfully!");
+  console.log("🎯 This demonstrates Alloy-based code generation for:");
+  console.log("   • Package.json generation");
+  console.log("   • Client interface definitions");
+  console.log("   • Client class implementations");
+  console.log("   • Operation functions (regular, LRO, paging)");
+  console.log();
+  console.log("🚀 To enable these features, use the feature flags:");
+  console.log("   • useAlloyPackageJson: true");
+  console.log("   • useAlloyCodeGeneration: true");
+  console.log("   • TYPESPEC_USE_ALLOY_CODE_GENERATION=true");
 }

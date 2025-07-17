@@ -258,6 +258,12 @@ export interface RLCOptions {
    * - false or undefined: Use traditional package.json generation
    */
   useAlloyPackageJson?: boolean;
+  /**
+   * Enable Alloy-based code generation for TypeScript classes
+   * - true: Use Alloy components for client classes, interfaces, and operations
+   * - false or undefined: Use traditional ts-morph code generation
+   */
+  useAlloyCodeGeneration?: boolean;
   typespecTitleMap?: Record<string, string>;
   hasSubscriptionId?: boolean;
   //TODO should remove this after finish the release tool test
