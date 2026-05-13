@@ -241,3 +241,53 @@ export interface ChildClientAccessor {
   childClientImportPath: string;
   childClientImportNames: string[];
 }
+
+// ---------------------------------------------------------------------------
+// Operation File Declaration (output of buildOperationFilesData)
+// ---------------------------------------------------------------------------
+
+export interface OperationFileDeclaration {
+  /** File path relative to source root */
+  filePath: string;
+
+  /** The operation group prefix (empty string for ungrouped) */
+  groupPrefix: string;
+
+  /** Operations in this file */
+  operations: OperationDeclaration[];
+
+  /** The client import alias (e.g., "WidgetServiceClient as Client") */
+  clientImportAlias: string;
+
+  /** The import path for the client context (e.g., "../index.js") */
+  clientImportPath: string;
+}
+
+export interface OperationDeclaration {
+  /** The operation name */
+  name: string;
+
+  /** The display/exported name */
+  displayName: string;
+
+  /** Doc string */
+  doc?: string[];
+
+  /** The main operation function signature */
+  mainFunction: FunctionShape;
+
+  /** The _send function name (private) */
+  sendFunctionName: string;
+
+  /** The _deserialize function name (private) */
+  deserializeFunctionName: string;
+
+  /** Whether this is an LRO operation */
+  isLro: boolean;
+
+  /** Whether this is a paging operation */
+  isPaging: boolean;
+
+  /** Whether this is an LRO + paging operation */
+  isLroPaging: boolean;
+}
