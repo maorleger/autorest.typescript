@@ -22,7 +22,9 @@ import {
   getClientParameterName,
   getClientParameters,
   getClientParametersDeclaration,
-  buildGetClientCredentialParam
+  buildGetClientEndpointParam,
+  buildGetClientCredentialParam,
+  buildGetClientOptionsParam
 } from "../modular/helpers/clientHelpers.js";
 import {
   getClassicalClientName,
@@ -209,6 +211,22 @@ function buildOptionsInterfaceData(
   };
 }
 
+/**
+ * A minimal StatementedNode-compatible collector that captures addStatements
+ * calls without needing ts-morph. Allows reusing existing helpers that
+ * expect to mutate a function body.
+ */
+class StatementCollector {
+  readonly statements: string[] = [];
+  addStatements(stmts: string | string[] | readonly string[]) {
+    if (Array.isArray(stmts)) {
+      this.statements.push(...stmts);
+    } else {
+      this.statements.push(stmts as string);
+    }
+  }
+}
+
 function buildFactoryFunctionData(
   dpgContext: SdkContext,
   client: SdkClientType<SdkServiceOperation>,
@@ -233,15 +251,13 @@ function buildFactoryFunctionData(
     defaultValue: p.initializer as string | undefined
   }));
 
-  // Build body statements
-  const bodyStatements: string[] = [];
+  // Use a StatementCollector to capture what the existing helpers produce
+  // without needing a real ts-morph function node
+  const collector = new StatementCollector();
 
-  // Endpoint param
-  const endpointParam = buildGetClientEndpointParamString(
-    dpgContext,
-    client,
-    emitterOptions
-  );
+  // Endpoint param — uses the real helper, captures its statement output
+  const { endpointParamName: endpointParam, assignedOptionalParams } =
+    buildGetClientEndpointParam(collector as any, dpgContext, client);
   const credentialParam = buildGetClientCredentialParam(client, emitterOptions);
 
   // API version param
@@ -252,13 +268,16 @@ function buildFactoryFunctionData(
     ? getClientParameterName(apiVersionParam)
     : undefined;
 
-  const optionsParam = buildGetClientOptionsParamString(
+  // Options param — uses the real helper
+  const optionsParam = buildGetClientOptionsParam(
+    collector as any,
     emitterOptions,
     endpointParam,
     apiVersionParamName
   );
 
-  bodyStatements.push(
+  // Now add the getClient call
+  collector.addStatements(
     `const clientContext = ${resolveReference(dependencies.getClient)}(${endpointParam}, ${credentialParam}, ${optionsParam});`
   );
 
@@ -266,7 +285,7 @@ function buildFactoryFunctionData(
   const { customHttpAuthHeaderName, customHttpAuthSharedKeyPrefix } =
     emitterOptions.options;
   if (customHttpAuthHeaderName && customHttpAuthSharedKeyPrefix) {
-    bodyStatements.push(`
+    collector.addStatements(`
       if(${resolveReference(dependencies.isKeyCredential)}(credential)) {
         clientContext.pipeline.addPolicy({ 
           name: "customKeyCredentialPolicy",
@@ -285,7 +304,7 @@ function buildFactoryFunctionData(
     emitterOptions,
     apiVersionParam,
     apiVersionParamName,
-    bodyStatements
+    collector.statements
   );
 
   // Return statement
@@ -319,7 +338,10 @@ function buildFactoryFunctionData(
     ...contextRequiredParam.map((p) => p.name),
     ...contextOptionalParams.map((p) => {
       const pName = getClientParameterName(p);
-      if (requiredParamNames.has(pName)) {
+      if (
+        requiredParamNames.has(pName) ||
+        (assignedOptionalParams && assignedOptionalParams.has(pName))
+      ) {
         return pName;
       }
       return `${pName}: options.${pName}`;
@@ -327,11 +349,11 @@ function buildFactoryFunctionData(
   ];
 
   if (allContextParams.length) {
-    bodyStatements.push(
+    collector.addStatements(
       `return { ...clientContext, ${allContextParams.join(", ")}} as ${rlcClientName};`
     );
   } else {
-    bodyStatements.push(`return clientContext;`);
+    collector.addStatements(`return clientContext;`);
   }
 
   return {
@@ -340,35 +362,8 @@ function buildFactoryFunctionData(
     parameters: params,
     returnType: rlcClientName,
     doc: getDocsFromDescription(client.doc),
-    bodyStatements
+    bodyStatements: collector.statements
   };
-}
-
-// --- Helpers that extract string values without touching ts-morph ---
-
-function buildGetClientEndpointParamString(
-  dpgContext: SdkContext,
-  client: SdkClientType<SdkServiceOperation>,
-  _emitterOptions: ModularEmitterOptions
-): string {
-  // Simplified: extract endpoint param name from client params
-  const endpointParams = getClientParameters(client, dpgContext, {
-    onClientOnly: false,
-    requiredOnly: true
-  }).filter((p) => p.kind === "endpoint");
-
-  if (endpointParams.length > 0) {
-    return getClientParameterName(endpointParams[0]!);
-  }
-  return "endpointParam";
-}
-
-function buildGetClientOptionsParamString(
-  _emitterOptions: ModularEmitterOptions,
-  _endpointParam: string,
-  _apiVersionParamName?: string
-): string {
-  return "options";
 }
 
 function buildApiVersionStatement(

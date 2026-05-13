@@ -68,9 +68,10 @@ import { Project } from "ts-morph";
 import { buildClassicOperationFiles } from "./modular/buildClassicalOperationGroups.js";
 import { buildClassicalClient } from "./modular/buildClassicalClient.js";
 import {
-  getClientContextPath,
-  buildClientContext
+  getClientContextPath
 } from "./modular/buildClientContext.js";
+import { buildClientContextData } from "./codemodel/build-client-context.js";
+import { renderClientContext } from "./codemodel/render-client-context.js";
 import { buildApiOptions } from "./modular/emitModelsOptions.js";
 import { buildOperationFiles } from "./modular/buildOperations.js";
 import { buildRestorePoller } from "./modular/buildRestorePoller.js";
@@ -306,7 +307,9 @@ export async function $onEmit(context: EmitContext) {
       await renameClientName(subClient[1], modularEmitterOptions);
       buildApiOptions(dpgContext, subClient, modularEmitterOptions);
       buildOperationFiles(dpgContext, subClient, modularEmitterOptions);
-      buildClientContext(dpgContext, subClient, modularEmitterOptions);
+      // Data → Render split: build data model, then render to ts-morph
+      const clientContextData = buildClientContextData(dpgContext, subClient, modularEmitterOptions);
+      renderClientContext(project, clientContextData);
       buildRestorePoller(dpgContext, subClient, modularEmitterOptions);
       if (dpgContext.rlcOptions?.hierarchyClient) {
         buildSubpathIndexFile(modularEmitterOptions, "api", subClient, {
