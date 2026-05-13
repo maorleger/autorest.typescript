@@ -280,9 +280,9 @@ export const RLCOptionsSchema: JSONSchemaType<EmitterOptions> = {
     "is-modular-library": {
       type: "boolean",
       nullable: true,
-      default: false,
+      default: true,
       description:
-        "Whether to generate a Modular library. Defaults to `false`. Arm packages default to `true`."
+        "Deprecated: RLC path has been removed. Always generates a Modular library."
     },
     "enable-operation-group": {
       type: "boolean",

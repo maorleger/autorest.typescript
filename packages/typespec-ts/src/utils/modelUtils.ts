@@ -1658,10 +1658,7 @@ export function predictDefaultValue(
     }
     return specificDefault;
   }
-  const serviceNamespace = getDefaultService(
-    program,
-    dpgContext.rlcOptions?.isModularLibrary
-  )?.type;
+  const serviceNamespace = getDefaultService(program)?.type;
   if (!serviceNamespace) {
     return;
   }
@@ -1674,18 +1671,12 @@ export function predictDefaultValue(
 
 export function getDefaultService(
   program: Program,
-  isModularLibrary: boolean = true
+  _isModularLibrary: boolean = true
 ): Service | undefined {
   const services = listServices(program);
   if (!services || services.length === 0) {
     reportDiagnostic(program, {
       code: "no-service-defined",
-      target: NoTarget
-    });
-  }
-  if (services.length > 1 && !isModularLibrary) {
-    reportDiagnostic(program, {
-      code: "more-than-one-service",
       target: NoTarget
     });
   }
@@ -1698,11 +1689,10 @@ export function getDefaultApiVersionString(
   dpgContext: SdkContext
 ): string | undefined {
   const program = dpgContext.program;
-  const isModularLibrary = dpgContext.rlcOptions?.isModularLibrary;
-  return getDefaultService(program, isModularLibrary)
+  return getDefaultService(program)
     ? getDefaultApiVersion(
         dpgContext,
-        getDefaultService(program, isModularLibrary)!.type
+        getDefaultService(program)!.type
       )?.value
     : undefined;
 }

@@ -29,28 +29,16 @@ import {
   RLCModel,
   RLCOptions,
   buildApiExtractorConfig,
-  buildClient,
-  buildClientDefinitions,
   buildEsLintConfig,
-  buildIndexFile,
-  buildIsUnexpectedHelper,
   buildLicenseFile,
   buildChangelogFile,
-  buildLogger,
   buildPackageFile,
-  buildParameterTypes,
-  buildPollingHelper,
-  buildPaginateHelper as buildRLCPaginateHelper,
   buildReadmeFile,
   hasClientNameChanged,
   updateReadmeFile,
   buildRecordedClientFile,
-  buildResponseTypes,
   buildRollupConfig,
   buildSampleTest,
-  buildSamples,
-  buildSerializeHelper,
-  buildTopLevelIndex,
   buildTsConfig,
   buildTsSnippetsConfig,
   buildTsSrcEsmConfig,
@@ -61,8 +49,6 @@ import {
   buildTestNodeTsConfig,
   buildVitestConfig,
   buildWarpConfig,
-  getClientName,
-  hasUnexpectedHelper,
   isAzurePackage,
   updatePackageFile,
   buildSampleEnvFile,
@@ -73,7 +59,7 @@ import {
   buildRootIndex,
   buildSubClientIndexFile
 } from "./modular/buildRootIndex.js";
-import { emitContentByBuilder, emitModels } from "./utils/emitUtil.js";
+import { emitContentByBuilder } from "./utils/emitUtil.js";
 import { provideContext, useContext } from "./contextManager.js";
 
 import { EmitterOptions } from "./lib.js";
@@ -138,11 +124,6 @@ export async function $onEmit(context: EmitContext) {
   await enrichDpgContext();
   const rlcOptions = dpgContext.rlcOptions ?? {};
 
-  const needUnexpectedHelper: Map<string, boolean> = new Map<string, boolean>();
-  const serviceNameToRlcModelsMap: Map<string, RLCModel> = new Map<
-    string,
-    RLCModel
-  >();
   provideContext("rlcMetaTree", new Map());
   provideContext("symbolMap", new Map());
   provideContext("outputProject", outputProject);
@@ -193,18 +174,14 @@ export async function $onEmit(context: EmitContext) {
   let modularEmitterOptions: ModularEmitterOptions;
   // 1. Clear sources folder
   await clearSrcFolder();
-  // 2. Generate RLC code model
-  // TODO: skip this step in modular once modular generator is sufficiently decoupled
+  // 2. Build RLC code models (still needed for metadata/project scaffolding via rlc-common)
+  // TODO: decouple metadata generation from RLCModel so this step can be removed
   await buildRLCCodeModels();
   // 3. Clear samples-dev folder if generateSample is true
   await clearSamplesDevFolder();
 
-  // 4. Generate sources
-  if (emitterOptions["is-modular-library"]) {
-    await generateModularSources();
-  } else {
-    await generateRLCSources();
-  }
+  // 4. Generate modular sources
+  await generateModularSources();
 
   // 5. Generate metadata and test files
   function getTypespecTsVersion(context: EmitContext): string | undefined {
@@ -267,9 +244,7 @@ export async function $onEmit(context: EmitContext) {
 
   async function clearSrcFolder() {
     await fsextra.emptyDir(
-      dpgContext.generationPathDetail?.modularSourcesDir ??
-        dpgContext.generationPathDetail?.rlcSourcesDir ??
-        ""
+      dpgContext.generationPathDetail?.modularSourcesDir ?? ""
     );
   }
 
@@ -285,40 +260,13 @@ export async function $onEmit(context: EmitContext) {
     }
   }
 
+  // Build RLC code models — still needed for metadata/project scaffolding (package.json, README, etc.)
+  // TODO: decouple metadata generation from RLCModel so this can be removed
   async function buildRLCCodeModels() {
     const clients = getRLCClients(dpgContext);
     for (const client of clients) {
       const rlcModels = await transformRLCModel(client, dpgContext);
       rlcCodeModels.push(rlcModels);
-      const serviceName = client.services[0]?.name ?? "Unknown";
-      serviceNameToRlcModelsMap.set(serviceName, rlcModels);
-      needUnexpectedHelper.set(
-        getClientName(rlcModels),
-        hasUnexpectedHelper(rlcModels)
-      );
-    }
-  }
-
-  async function generateRLCSources() {
-    for (const rlcModels of rlcCodeModels) {
-      await emitModels(rlcModels, program);
-      await emitContentByBuilder(program, buildClientDefinitions, rlcModels);
-      await emitContentByBuilder(program, buildResponseTypes, rlcModels);
-      await emitContentByBuilder(program, buildClient, rlcModels);
-      await emitContentByBuilder(program, buildParameterTypes, rlcModels);
-      await emitContentByBuilder(program, buildIsUnexpectedHelper, rlcModels);
-      await emitContentByBuilder(program, buildIndexFile, rlcModels);
-      await emitContentByBuilder(program, buildLogger, rlcModels);
-      await emitContentByBuilder(program, buildTopLevelIndex, rlcModels);
-      await emitContentByBuilder(program, buildRLCPaginateHelper, rlcModels);
-      await emitContentByBuilder(program, buildPollingHelper, rlcModels);
-      await emitContentByBuilder(program, buildSerializeHelper, rlcModels);
-      await emitContentByBuilder(
-        program,
-        buildSamples,
-        rlcModels,
-        dpgContext.generationPathDetail?.metadataDir
-      );
     }
   }
 
@@ -390,11 +338,9 @@ export async function $onEmit(context: EmitContext) {
         subClient
       );
     }
-    // Enable modular sample generation when explicitly set to true or MPG
+    // Enable sample generation when explicitly set to true or MPG
     if (emitterOptions["generate-sample"] === true) {
       const samples = emitSamples(dpgContext);
-      // Refine the rlc sample generation logic
-      // TODO: remember to remove this out when RLC is splitted from Modular
       if (samples.length > 0) {
         dpgContext.rlcOptions!.generateSample = true;
       }
@@ -439,10 +385,8 @@ export async function $onEmit(context: EmitContext) {
     if (emitterVersion !== undefined) {
       content.emitterVersion = emitterVersion;
     }
-    if (dpgContext.rlcOptions?.isModularLibrary) {
-      content.crossLanguageDefinitions =
-        generateCrossLanguageDefinitionFile(dpgContext);
-    }
+    content.crossLanguageDefinitions =
+      generateCrossLanguageDefinitionFile(dpgContext);
     return {
       path: "metadata.json",
       content: JSON.stringify(content, null, 2)
@@ -496,10 +440,8 @@ export async function $onEmit(context: EmitContext) {
     }
 
     //TODO Need consider multi-client cases
-    if (option.isModularLibrary) {
-      for (const subClient of dpgContext.sdkPackage.clients) {
-        rlcClient.libraryName = subClient.name;
-      }
+    for (const subClient of dpgContext.sdkPackage.clients) {
+      rlcClient.libraryName = subClient.name;
     }
 
     if (shouldGenerateMetadata) {
@@ -529,35 +471,32 @@ export async function $onEmit(context: EmitContext) {
       ) {
         await emitTests(dpgContext);
       }
-      let modularPackageInfo = {};
-      if (option.isModularLibrary) {
+      let modularPackageInfo: Record<string, any> = {
+        exports: getModuleExports(context, modularEmitterOptions)
+      };
+      // Build dependencies
+      const dependencies: Record<string, string> = {};
+      if (isAzureFlavor) {
+        dependencies["@azure/core-util"] = "^1.9.2";
+      }
+      // Add fast-xml-parser if XML serialization is used
+      if (packageUsesXmlSerialization(dpgContext.sdkPackage)) {
+        dependencies["fast-xml-parser"] = "^4.5.0";
+      }
+      if (isAzureFlavor) {
         modularPackageInfo = {
-          exports: getModuleExports(context, modularEmitterOptions)
+          ...modularPackageInfo,
+          dependencies,
+          clientContextPaths: getRelativeContextPaths(
+            context,
+            modularEmitterOptions
+          )
         };
-        // Build dependencies
-        const dependencies: Record<string, string> = {};
-        if (isAzureFlavor) {
-          dependencies["@azure/core-util"] = "^1.9.2";
-        }
-        // Add fast-xml-parser if XML serialization is used
-        if (packageUsesXmlSerialization(dpgContext.sdkPackage)) {
-          dependencies["fast-xml-parser"] = "^4.5.0";
-        }
-        if (isAzureFlavor) {
-          modularPackageInfo = {
-            ...modularPackageInfo,
-            dependencies,
-            clientContextPaths: getRelativeContextPaths(
-              context,
-              modularEmitterOptions
-            )
-          };
-        } else if (Object.keys(dependencies).length > 0) {
-          modularPackageInfo = {
-            ...modularPackageInfo,
-            dependencies
-          };
-        }
+      } else if (Object.keys(dependencies).length > 0) {
+        modularPackageInfo = {
+          ...modularPackageInfo,
+          dependencies
+        };
       }
       commonBuilders.push((model) =>
         buildPackageFile(model, modularPackageInfo)
@@ -597,46 +536,38 @@ export async function $onEmit(context: EmitContext) {
         dpgContext.generationPathDetail?.metadataDir
       );
 
-      if (option.isModularLibrary) {
-        for (const file of project.getSourceFiles()) {
-          await emitContentByBuilder(
-            program,
-            () => ({ content: file.getFullText(), path: file.getFilePath() }),
-            modularEmitterOptions as any
-          );
-        }
+      for (const file of project.getSourceFiles()) {
+        await emitContentByBuilder(
+          program,
+          () => ({ content: file.getFullText(), path: file.getFilePath() }),
+          modularEmitterOptions as any
+        );
       }
     } else if (hasPackageFile && !hasManualConvenienceLayer) {
       const updateBuilders = [];
-      let modularPackageInfo = {};
 
       // update existing package.json file with correct dependencies
-      if (option.isModularLibrary) {
-        // Additional format-specific dependencies to merge when migrating
-        // (e.g. fast-xml-parser when XML serialization is used)
-        const additionalDependencies: Record<string, string> = {};
-        if (packageUsesXmlSerialization(dpgContext.sdkPackage)) {
-          additionalDependencies["fast-xml-parser"] = "^4.5.0";
-        }
-        modularPackageInfo = {
-          exports: getModuleExports(context, modularEmitterOptions),
-          clientContextPaths: getRelativeContextPaths(
-            context,
-            modularEmitterOptions
-          ),
-          ...(Object.keys(additionalDependencies).length > 0 && {
-            dependencies: additionalDependencies
-          })
-        };
+      // Additional format-specific dependencies to merge when migrating
+      // (e.g. fast-xml-parser when XML serialization is used)
+      const additionalDependencies: Record<string, string> = {};
+      if (packageUsesXmlSerialization(dpgContext.sdkPackage)) {
+        additionalDependencies["fast-xml-parser"] = "^4.5.0";
       }
+      const modularPackageInfo = {
+        exports: getModuleExports(context, modularEmitterOptions),
+        clientContextPaths: getRelativeContextPaths(
+          context,
+          modularEmitterOptions
+        ),
+        ...(Object.keys(additionalDependencies).length > 0 && {
+          dependencies: additionalDependencies
+        })
+      };
 
-      // Always update package.json for monorepo packages (adds #platform/* imports)
-      // and for modular packages (adds exports, clientContextPaths, LRO deps)
-      if (option.isModularLibrary || option.azureSdkForJs) {
-        updateBuilders.push((model: RLCModel) =>
-          updatePackageFile(model, existingPackageFilePath, modularPackageInfo)
-        );
-      }
+      // Always update package.json (adds exports, clientContextPaths, LRO deps, #platform/* imports)
+      updateBuilders.push((model: RLCModel) =>
+        updatePackageFile(model, existingPackageFilePath, modularPackageInfo)
+      );
 
       // Update warp.config.yml for Azure monorepo packages
       if (option.azureSdkForJs) {

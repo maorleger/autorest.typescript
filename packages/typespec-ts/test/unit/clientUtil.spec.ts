@@ -73,7 +73,8 @@ describe("client utils get rlc clients", () => {
     `;
     const clients = await getRLCClientsFromTypeSpec(content);
     assert.equal(clients.length, 1);
-    assert.equal(clients[0]?.name, "MyServiceClient");
+    // With modular (always true), returns the @client name directly
+    assert.equal(clients[0]?.name, "MyClient");
   });
 
   // skip for https://github.com/Azure/autorest.typescript/issues/3664

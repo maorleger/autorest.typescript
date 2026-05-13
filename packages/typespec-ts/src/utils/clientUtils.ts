@@ -20,16 +20,14 @@ import { NameType, normalizeName } from "@azure-tools/rlc-common";
 
 export function getRLCClients(
   dpgContext: SdkContext,
-  isModularLibrary?: boolean
+  _isModularLibrary?: boolean
 ): SdkClient[] {
-  const modular =
-    isModularLibrary ?? dpgContext.rlcOptions?.isModularLibrary ?? false;
   const clients = listClients(dpgContext);
   const rawServiceNamespaces =
     dpgContext.allServiceNamespaces ?? listAllServiceNamespaces(dpgContext);
 
-  // For one client in Modular: Return the client from listClients with multi-service support
-  if (modular && clients.length === 1) {
+  // For one client: Return the client from listClients with multi-service support
+  if (clients.length === 1) {
     return clients.map((client) => {
       const services = client.services;
       return {
@@ -41,8 +39,7 @@ export function getRLCClients(
       };
     });
   } else {
-    // For RLC and multiple clients in Modular:
-    // Flatten all services and return one client per service
+    // For multiple clients: Flatten all services and return one client per service
     const services = new Set<Namespace>();
     clients.forEach((c) => {
       const clientService = c.services;

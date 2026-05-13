@@ -43,8 +43,8 @@ function extractRLCOptions(
   generationRootDir: string
 ): RLCOptions {
   const program = dpgContext.program;
-  // Compute isModularLibrary early - defaults to true unless explicitly set to false
-  const isModularLibrary = emitterOptions["is-modular-library"] !== false;
+  // RLC path has been removed — always modular
+  const isModularLibrary = true;
   const includeShortcuts = getIncludeShortcuts(emitterOptions);
   const packageDetails = getPackageDetails(
     program,
