@@ -11,5 +11,9 @@ export type {
   ParameterShape,
   InterfaceShape,
   FunctionShape,
-  ClientContextDeclaration
+  MethodShape,
+  OperationGroupShape,
+  ClientContextDeclaration,
+  ClassicalClientDeclaration,
+  ChildClientAccessor
 } from "./types.js";

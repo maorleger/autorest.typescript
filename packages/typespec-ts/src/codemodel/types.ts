@@ -134,3 +134,110 @@ export interface ClientContextDeclaration {
   /** Hierarchy depth (affects relative import paths, e.g., "../logger.js") */
   hierarchyDepth: number;
 }
+
+// ---------------------------------------------------------------------------
+// Method shape (for classical client methods)
+// ---------------------------------------------------------------------------
+
+export interface MethodShape {
+  name: string;
+  parameters: ParameterShape[];
+  returnType: string;
+  doc?: string[];
+  bodyStatements: string[];
+  isAsync?: boolean;
+  /** Whether this is a deprecated compatibility method */
+  isDeprecated?: boolean;
+  deprecationMessage?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Operation Group shape
+// ---------------------------------------------------------------------------
+
+export interface OperationGroupShape {
+  /** The group name (e.g., "widgets") */
+  name: string;
+  /** The raw PascalCase name for type references */
+  rawName: string;
+  /** The property name on the client class */
+  propertyName: string;
+  /** The getter function name */
+  getterName: string;
+  /** The type name for the operations interface */
+  operationsTypeName: string;
+}
+
+// ---------------------------------------------------------------------------
+// Classical Client Declaration (output of buildClassicalClientData)
+// ---------------------------------------------------------------------------
+
+export interface ClassicalClientDeclaration {
+  /** File path relative to source root */
+  filePath: string;
+
+  /** The class name (e.g., "WidgetServiceClient") */
+  className: string;
+
+  /** The modular client name (e.g., "WidgetService") — used for factory function reference */
+  modularClientName: string;
+
+  /** Client doc string */
+  doc?: string[];
+
+  /** The type of the private _client property */
+  clientPropertyType: string;
+
+  /** The Pipeline type reference string */
+  pipelineType: string;
+
+  /** Constructor parameters */
+  constructorParameters: ParameterShape[];
+
+  /** Constructor body statements */
+  constructorBody: string[];
+
+  /** Whether the constructor needs subscriptionId overloads */
+  needsSubscriptionIdOverload: boolean;
+
+  /** Parameters for the overload (minus subscriptionId and options) */
+  overloadBaseParameters?: ParameterShape[];
+
+  /** The options type name (e.g., "WidgetServiceClientOptionalParams") */
+  optionsTypeName: string;
+
+  /** Export declaration for the options type */
+  optionsTypeExportSource: string;
+
+  /** Whether this client has child clients */
+  hasChildClients: boolean;
+
+  /** Private _clientParams property info (only if hasChildClients) */
+  clientParamsType?: string;
+  clientParamsInitStatement?: string;
+
+  /** Direct operations on the client (not in a group) */
+  methods: MethodShape[];
+
+  /** Operation groups */
+  operationGroups: OperationGroupShape[];
+
+  /** Child client accessors */
+  childClientAccessors: ChildClientAccessor[];
+}
+
+export interface ChildClientAccessor {
+  /** Method name (e.g., "getWidgetsClient") */
+  name: string;
+  /** Return type (e.g., "WidgetsClient") */
+  returnType: string;
+  /** Doc string */
+  doc?: string[];
+  /** Additional parameters beyond parent params */
+  additionalParameters: ParameterShape[];
+  /** The body statement that constructs the child client */
+  bodyStatement: string;
+  /** Import info for the child client */
+  childClientImportPath: string;
+  childClientImportNames: string[];
+}
