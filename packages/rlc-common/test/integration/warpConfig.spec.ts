@@ -4,6 +4,12 @@
 import { describe, it, expect } from "vitest";
 
 import { buildWarpConfig } from "../../src/metadata/buildWarpConfig.js";
+import {
+  buildTsSrcEsmConfig,
+  buildTsSrcBrowserConfig,
+  buildTsSrcReactNativeConfig,
+  buildTsSrcCjsConfig
+} from "../../src/metadata/buildTsConfig.js";
 import { createMockModel } from "./mockHelper.js";
 
 describe("warp.config.yml generation", () => {
@@ -92,6 +98,45 @@ describe("warp.config.yml generation", () => {
       expect(result!.content).toContain("name: react-native");
       expect(result!.content).toContain("name: esm");
       expect(result!.content).toContain("name: commonjs");
+    });
+  });
+
+  describe("tsconfig path consistency", () => {
+    it("every tsconfig referenced in warp.config.yml has a matching config/ builder", () => {
+      const model = createMockModel({
+        moduleKind: "esm",
+        isMonorepo: true,
+        flavor: "azure"
+      });
+
+      const warpResult = buildWarpConfig(model);
+      expect(warpResult).toBeDefined();
+
+      // Extract all tsconfig paths from warp.config.yml
+      const tsconfigRefPattern = /tsconfig:\s*"([^"]+)"/g;
+      const referencedPaths: string[] = [];
+      let match;
+      while (
+        (match = tsconfigRefPattern.exec(warpResult!.content)) !== null
+      ) {
+        referencedPaths.push(match[1].replace(/^\.\//, ""));
+      }
+      expect(referencedPaths.length).toBeGreaterThan(0);
+
+      // These are the config/ files the builders produce
+      const generatedPaths = [
+        buildTsSrcEsmConfig(),
+        buildTsSrcBrowserConfig(),
+        buildTsSrcReactNativeConfig(),
+        buildTsSrcCjsConfig()
+      ].map((f) => f.path);
+
+      for (const ref of referencedPaths) {
+        expect(
+          generatedPaths,
+          `warp.config.yml references "${ref}" but no config/ builder generates it`
+        ).toContain(ref);
+      }
     });
   });
 });
