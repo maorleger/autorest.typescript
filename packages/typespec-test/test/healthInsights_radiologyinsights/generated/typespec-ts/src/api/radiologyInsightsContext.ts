@@ -7,6 +7,8 @@ import { Client, ClientOptions, getClient } from "@azure-rest/core-client";
 import { KeyCredential } from "@azure/core-auth";
 
 export interface RadiologyInsightsContext extends Client {
+  /** Supported Cognitive Services endpoints (protocol and hostname, for example: https://westus2.api.cognitive.microsoft.com). */
+  endpointParam: string;
   /** The API version to use for this operation. */
   /** Known values of {@link KnownApiVersion} that the service accepts. */
   apiVersion?: string;
@@ -40,5 +42,5 @@ export function createRadiologyInsights(
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
   const apiVersion = options.apiVersion;
-  return { ...clientContext, apiVersion } as RadiologyInsightsContext;
+  return { ...clientContext, endpointParam, apiVersion } as RadiologyInsightsContext;
 }

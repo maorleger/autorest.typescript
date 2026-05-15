@@ -7,6 +7,11 @@ import { Client, ClientOptions, getClient } from "@azure-rest/core-client";
 import { KeyCredential, TokenCredential } from "@azure/core-auth";
 
 export interface WidgetManagerContext extends Client {
+  /**
+   * Supported Widget Services endpoints (protocol and hostname, for example:
+   * https://westus.api.widget.contoso.com).
+   */
+  endpointParam: string;
   /** The API version to use for this operation. */
   /** Known values of {@link KnownVersions} that the service accepts. */
   apiVersion?: string;
@@ -41,5 +46,5 @@ export function createWidgetManager(
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
   const apiVersion = options.apiVersion;
-  return { ...clientContext, apiVersion } as WidgetManagerContext;
+  return { ...clientContext, endpointParam, apiVersion } as WidgetManagerContext;
 }

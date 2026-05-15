@@ -25,6 +25,11 @@ import { KeyCredential } from "@azure/core-auth";
  * discover incidents and establish a logic flow for root cause analysis.
  */
 export interface AnomalyDetectorContext extends Client {
+  /**
+   * Supported Azure Cognitive Services endpoints (protocol and host name, such as
+   * https://westus2.api.cognitive.microsoft.com).
+   */
+  endpointParam: string;
   /** Api Version */
   apiVersion?: APIVersion;
 }
@@ -74,5 +79,5 @@ export function createAnomalyDetector(
     },
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
-  return { ...clientContext, apiVersion } as AnomalyDetectorContext;
+  return { ...clientContext, endpointParam, apiVersion } as AnomalyDetectorContext;
 }

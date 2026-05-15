@@ -7,6 +7,8 @@ import { Client, ClientOptions, getClient } from "@azure-rest/core-client";
 import { TokenCredential } from "@azure/core-auth";
 
 export interface AIProjectContext extends Client {
+  /** The Azure AI Foundry project endpoint, in the form `https://<azure-region>.api.azureml.ms` or `https://<private-link-guid>.<azure-region>.api.azureml.ms`, where <azure-region> is the Azure region where the project is deployed (e.g. westus) and <private-link-guid> is the GUID of the Enterprise private link. */
+  endpointParam: string;
   /** The Azure subscription ID. */
   subscriptionId: string;
   /** The name of the Azure Resource Group. */
@@ -53,6 +55,7 @@ export function createAIProject(
   const apiVersion = options.apiVersion;
   return {
     ...clientContext,
+    endpointParam,
     subscriptionId,
     resourceGroupName,
     projectName,

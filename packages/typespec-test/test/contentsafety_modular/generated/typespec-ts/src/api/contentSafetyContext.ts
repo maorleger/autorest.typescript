@@ -8,6 +8,11 @@ import { KeyCredential, TokenCredential } from "@azure/core-auth";
 
 /** Analyze harmful content */
 export interface ContentSafetyContext extends Client {
+  /**
+   * Supported Cognitive Services endpoints (protocol and hostname, for example:
+   * https://<resource-name>.cognitiveservices.azure.com).
+   */
+  endpointParam: string;
   /** The API version to use for this operation. */
   /** Known values of {@link KnownVersions} that the service accepts. */
   apiVersion?: string;
@@ -43,5 +48,5 @@ export function createContentSafety(
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
   const apiVersion = options.apiVersion;
-  return { ...clientContext, apiVersion } as ContentSafetyContext;
+  return { ...clientContext, endpointParam, apiVersion } as ContentSafetyContext;
 }

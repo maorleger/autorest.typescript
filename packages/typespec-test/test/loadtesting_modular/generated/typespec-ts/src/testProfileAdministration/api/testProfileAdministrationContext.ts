@@ -7,6 +7,7 @@ import { Client, ClientOptions, getClient } from "@azure-rest/core-client";
 import { TokenCredential } from "@azure/core-auth";
 
 export interface TestProfileAdministrationContext extends Client {
+  endpointParam: string;
   /** The API version to use for this operation. */
   /** Known values of {@link KnownAPIVersions} that the service accepts. */
   apiVersion?: string;
@@ -40,5 +41,5 @@ export function createTestProfileAdministration(
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
   const apiVersion = options.apiVersion;
-  return { ...clientContext, apiVersion } as TestProfileAdministrationContext;
+  return { ...clientContext, endpointParam, apiVersion } as TestProfileAdministrationContext;
 }

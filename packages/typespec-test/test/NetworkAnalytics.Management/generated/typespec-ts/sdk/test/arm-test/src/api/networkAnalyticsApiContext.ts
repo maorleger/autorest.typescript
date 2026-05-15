@@ -46,5 +46,5 @@ export function createNetworkAnalyticsApi(
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
   const apiVersion = options.apiVersion;
-  return { ...clientContext, apiVersion, subscriptionId } as NetworkAnalyticsApiContext;
+  return { ...clientContext, subscriptionId, apiVersion } as NetworkAnalyticsApiContext;
 }

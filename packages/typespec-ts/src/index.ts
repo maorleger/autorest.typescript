@@ -69,26 +69,26 @@ import {
   buildSnippets,
   buildTsSampleConfig
 } from "@azure-tools/rlc-common";
-import {
-  buildRootIndex,
-  buildSubClientIndexFile
-} from "./modular/buildRootIndex.js";
+import { buildRootIndex, buildSubClientIndexFile } from "./codegen/indexes.js";
 import { emitContentByBuilder, emitModels } from "./utils/emitUtil.js";
 import { provideContext, useContext } from "./contextManager.js";
 
 import { EmitterOptions } from "./lib.js";
 import { ModularEmitterOptions } from "./modular/interfaces.js";
 import { Project } from "ts-morph";
-import { buildClassicOperationFiles } from "./modular/buildClassicalOperationGroups.js";
-import { buildClassicalClient } from "./modular/buildClassicalClient.js";
 import {
-  getClientContextPath,
-  buildClientContext
-} from "./modular/buildClientContext.js";
-import { buildApiOptions } from "./modular/emitModelsOptions.js";
-import { buildOperationFiles } from "./modular/buildOperations.js";
-import { buildRestorePoller } from "./modular/buildRestorePoller.js";
-import { buildSubpathIndexFile } from "./modular/buildSubpathIndex.js";
+  emitClassicOperationFiles as buildClassicOperationFiles,
+  emitClassicalClient as buildClassicalClient
+} from "./codegen/classicalClient.js";
+import { getClientContextPath } from "./modular/buildClientContext.js";
+import { adaptSingleClient, adaptSettings } from "./tcgcadapter/adapter.js";
+import { emitFromCodeModel } from "./codegen/emitter.js";
+import {
+  emitApiOptions as buildApiOptions,
+  emitOperationFiles as buildOperationFiles
+} from "./codegen/operations.js";
+import { emitRestorePoller as buildRestorePoller } from "./codegen/restorePoller.js";
+import { buildSubpathIndexFile } from "./codegen/indexes.js";
 import {
   createSdkContext,
   listAllServiceNamespaces,
@@ -96,8 +96,11 @@ import {
   SdkServiceOperation
 } from "@azure-tools/typespec-client-generator-core";
 import { transformModularEmitterOptions } from "./modular/buildModularOptions.js";
-import { emitLoggerFile } from "./modular/emitLoggerFile.js";
-import { emitTypes, emitNonModelResponseTypes } from "./modular/emitModels.js";
+import { emitLoggerFile } from "./codegen/indexes.js";
+import {
+  emitModels as emitTypes,
+  emitNonModelResponses as emitNonModelResponseTypes
+} from "./codegen/models.js";
 import { existsSync } from "fs";
 import { getModuleExports } from "./modular/buildProjectFiles.js";
 import {
@@ -112,8 +115,8 @@ import { provideBinder } from "./framework/hooks/binder.js";
 import { provideSdkTypes } from "./framework/hooks/sdkTypes.js";
 import { transformRLCModel } from "./transform/transform.js";
 import { transformRLCOptions } from "./transform/transfromRLCOptions.js";
-import { emitSamples } from "./modular/emitSamples.js";
-import { emitTests } from "./modular/emitTests.js";
+import { emitSamples } from "./codegen/samples.js";
+import { emitTestFiles as emitTests } from "./codegen/index.js";
 import { generateCrossLanguageDefinitionFile } from "./utils/crossLanguageDef.js";
 import { getClassicalClientName } from "./modular/helpers/namingHelpers.js";
 
@@ -357,8 +360,22 @@ export async function $onEmit(context: EmitContext) {
     for (const subClient of clientMap) {
       await renameClientName(subClient[1], modularEmitterOptions);
       buildApiOptions(dpgContext, subClient, modularEmitterOptions);
-      buildOperationFiles(dpgContext, subClient, modularEmitterOptions);
-      buildClientContext(dpgContext, subClient, modularEmitterOptions);
+      buildOperationFiles(
+        project,
+        dpgContext,
+        subClient,
+        modularEmitterOptions
+      );
+      // Adapter → code model → codegen for client context
+      const tsClient = adaptSingleClient(
+        subClient,
+        dpgContext,
+        modularEmitterOptions
+      );
+      emitFromCodeModel(project, {
+        clients: [tsClient],
+        settings: adaptSettings(dpgContext, modularEmitterOptions)
+      });
       buildRestorePoller(dpgContext, subClient, modularEmitterOptions);
       if (dpgContext.rlcOptions?.hierarchyClient) {
         buildSubpathIndexFile(modularEmitterOptions, "api", subClient, {
