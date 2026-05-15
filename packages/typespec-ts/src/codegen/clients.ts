@@ -23,7 +23,7 @@ import type {
 import { resolveReference } from "../framework/reference.js";
 import { useDependencies } from "../framework/hooks/useDependencies.js";
 import { refkey } from "../framework/refkey.js";
-import { CloudSettingHelpers } from "../modular/static-helpers-metadata.js";
+import { CloudSettingHelpers } from "../codegen/static-helpers-metadata.js";
 
 /**
  * Emit the client context file for a single client.

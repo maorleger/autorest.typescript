@@ -1,6 +1,6 @@
 import { describe, it, assert } from "vitest";
 
-import { generateAssertionsForValue } from "../../src/modular/helpers/exampleValueHelpers.js";
+import { generateAssertionsForValue } from "../../src/codegen/helpers/exampleValueHelpers.js";
 
 describe("exampleGeneration", () => {
   describe("generateAssertionsForValue", () => {

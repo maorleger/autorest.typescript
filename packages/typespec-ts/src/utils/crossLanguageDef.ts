@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import { SdkContext } from "./interfaces.js";
-import { transformModularEmitterOptions } from "../modular/buildModularOptions.js";
+import { transformModularEmitterOptions } from "../codegen/buildModularOptions.js";
 import { getMethodHierarchiesMap } from "./operationUtil.js";
 import { NameType, normalizeName } from "@azure-tools/rlc-common";
 import { UsageFlags } from "@azure-tools/typespec-client-generator-core";

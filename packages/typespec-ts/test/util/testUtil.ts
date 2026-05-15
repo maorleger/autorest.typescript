@@ -33,13 +33,13 @@ import {
   UrlTemplateHelpers,
   XmlHelpers,
   CreateRecorderHelpers
-} from "../../src/modular/static-helpers-metadata.js";
+} from "../../src/codegen/static-helpers-metadata.js";
 import {
   AzureCoreDependencies,
   AzureIdentityDependencies,
   AzurePollingDependencies,
   AzureTestDependencies
-} from "../../src/modular/external-dependencies.js";
+} from "../../src/codegen/external-dependencies.js";
 
 export interface ExampleJson {
   filename: string;

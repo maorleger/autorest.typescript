@@ -22,13 +22,13 @@ import type {
 import { InitializedByFlags } from "@azure-tools/typespec-client-generator-core";
 import { NameType, normalizeName } from "@azure-tools/rlc-common";
 import type { SdkContext } from "../utils/interfaces.js";
-import type { ModularEmitterOptions } from "../modular/interfaces.js";
+import type { ModularEmitterOptions } from "../codegen/interfaces.js";
 import {
   getClientName,
   getClassicalClientName
-} from "../modular/helpers/namingHelpers.js";
-import { getDocsFromDescription } from "../modular/helpers/docsHelpers.js";
-import { getTypeExpression } from "../modular/type-expressions/get-type-expression.js";
+} from "../codegen/helpers/namingHelpers.js";
+import { getDocsFromDescription } from "../codegen/helpers/docsHelpers.js";
+import { getTypeExpression } from "../codegen/type-expressions/get-type-expression.js";
 import {
   getModularClientOptions,
   getClientHierarchyMap
@@ -37,10 +37,10 @@ import {
   getClientParameters,
   getClientParameterName,
   buildGetClientCredentialParam
-} from "../modular/helpers/clientHelpers.js";
-import { getApiVersionEnum, buildEnumTypes } from "../modular/emitModels.js";
+} from "../codegen/helpers/clientHelpers.js";
+import { getApiVersionEnum, buildEnumTypes } from "../codegen/emitModels.js";
 import { getMethodHierarchiesMap } from "../utils/operationUtil.js";
-import { getOperationFunction } from "../modular/helpers/operationHelpers.js";
+import { getOperationFunction } from "../codegen/helpers/operationHelpers.js";
 
 import type {
   TSCodeModel,

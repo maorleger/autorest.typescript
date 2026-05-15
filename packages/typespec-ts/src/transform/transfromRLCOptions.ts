@@ -21,7 +21,7 @@ import { detectModelConflicts } from "../utils/namespaceUtils.js";
 import { getOperationName } from "../utils/operationUtil.js";
 import { getSupportedHttpAuth } from "../utils/credentialUtils.js";
 import _ from "lodash";
-import { getClientParameters } from "../modular/helpers/clientHelpers.js";
+import { getClientParameters } from "../codegen/helpers/clientHelpers.js";
 
 export function transformRLCOptions(
   emitterOptions: EmitterOptions,

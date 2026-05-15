@@ -2,51 +2,90 @@
 // Licensed under the MIT License.
 
 /**
- * Codegen layer — walks the TSCodeModel tree and generates source files.
+ * Codegen layer — generates TypeScript source files from the code model
+ * and TCGC SDK context.
  *
  * This is the TypeScript equivalent of:
  * - Go's `codegen.go/src/emitter.ts` → `Emitter.emit()`
  * - Rust's `src/codegen/codeGenerator.ts` → `CodeGenerator.emitContent()`
  *
- * This layer has ZERO TCGC imports. It consumes only the code model types
- * and delegates to existing modular builders via thin wrappers.
+ * This barrel file exports the public surface of the codegen layer for
+ * use by the emitter entry point in `src/index.ts`.
  */
 
-// Orchestrator
+// Code-model-driven emitter (Phase 0/1 — fully data-driven path)
 export { emitFromCodeModel } from "./emitter.js";
 
-// Client context (new codegen path)
+// Client context (code-model-driven)
 export { emitClientContext } from "./clients.js";
 
-// Operations (thin wrappers)
+// Operations
 export {
-  emitOperationFiles,
-  emitApiOptions,
+  buildOperationFiles,
+  buildOperationOptions,
   buildLroDeserDetailMap
-} from "./operations.js";
+} from "./buildOperations.js";
+export { buildApiOptions } from "./emitModelsOptions.js";
 
-// Classical client (thin wrappers)
+// Classical client
+export { buildClassicalClient } from "./buildClassicalClient.js";
+export { buildClassicOperationFiles } from "./buildClassicalOperationGroups.js";
+
+// Models/enums/types
 export {
-  emitClassicalClient,
-  emitClassicOperationFiles
-} from "./classicalClient.js";
+  emitTypes,
+  emitNonModelResponseTypes,
+  visitPackageTypes,
+  buildEnumTypes,
+  getApiVersionEnum,
+  normalizeModelName
+} from "./emitModels.js";
 
-// Models/enums (thin wrappers)
-export { emitModels, emitNonModelResponses } from "./models.js";
+// Restore poller
+export { buildRestorePoller } from "./buildRestorePoller.js";
 
-// Restore poller (thin wrapper)
-export { emitRestorePoller } from "./restorePoller.js";
+// Index files
+export { buildSubpathIndexFile } from "./buildSubpathIndex.js";
+export { buildRootIndex, buildSubClientIndexFile } from "./buildRootIndex.js";
+export { emitLoggerFile } from "./emitLoggerFile.js";
 
-// Index files (thin wrappers)
+// Samples/tests
+export { emitSamples } from "./emitSamples.js";
+export { emitTests } from "./emitTests.js";
+
+// Client context helpers
 export {
-  buildSubpathIndexFile as emitSubpathIndexFile,
-  buildRootIndex as emitRootIndex,
-  buildSubClientIndexFile as emitSubClientIndexFile,
-  emitLoggerFile
-} from "./indexes.js";
+  getClientContextPath,
+  buildClientContext
+} from "./buildClientContext.js";
 
-// Samples/tests (thin wrappers)
+// Configuration / project files
+export { transformModularEmitterOptions } from "./buildModularOptions.js";
+export { getModuleExports } from "./buildProjectFiles.js";
+
+// Types
+export type { ModularEmitterOptions } from "./interfaces.js";
+
+// External package dependencies (used for import resolution)
 export {
-  emitSamples as emitSampleFiles,
-  emitTests as emitTestFiles
-} from "./samples.js";
+  AzureCoreDependencies,
+  AzureIdentityDependencies,
+  AzurePollingDependencies,
+  AzureTestDependencies,
+  DefaultCoreDependencies
+} from "./external-dependencies.js";
+
+// Static helper metadata (runtime helpers copied into generated SDKs)
+export {
+  CloudSettingHelpers,
+  CreateRecorderHelpers,
+  MultipartHelpers,
+  PagingHelpers,
+  PlatformTypeHelpers,
+  PollingHelpers,
+  SerializationHelpers,
+  SimplePollerHelpers,
+  StorageCompatHelpers,
+  UrlTemplateHelpers,
+  XmlHelpers
+} from "./static-helpers-metadata.js";

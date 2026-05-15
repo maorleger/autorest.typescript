@@ -12,7 +12,7 @@ import {
 import { refkey } from "./refkey.js";
 import { resolveProjectRoot } from "../utils/resolve-project-root.js";
 import { isAzurePackage } from "@azure-tools/rlc-common";
-import { ModularEmitterOptions } from "../modular/interfaces.js";
+import { ModularEmitterOptions } from "../codegen/interfaces.js";
 import { NoTarget, Program } from "@typespec/compiler";
 import { reportDiagnostic } from "../lib.js";
 export const SourceFileSymbol = Symbol("SourceFile");
