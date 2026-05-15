@@ -48,5 +48,5 @@ export function createParametrizedHost(
   };
   const clientContext = getClient(endpointUrl, credential, updatedOptions);
   const apiVersion = options.apiVersion;
-  return { ...clientContext, apiVersion, host, subdomain, sufix } as ParametrizedHostContext;
+  return { ...clientContext, host, subdomain, sufix, apiVersion } as ParametrizedHostContext;
 }

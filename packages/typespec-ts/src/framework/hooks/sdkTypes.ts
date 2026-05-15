@@ -10,13 +10,13 @@ import {
 } from "@azure-tools/typespec-client-generator-core";
 import { provideContext, useContext } from "../../contextManager.js";
 
-import { visitPackageTypes } from "../../modular/emitModels.js";
+import { visitPackageTypes } from "../../codegen/emitModels.js";
 import { SdkContext } from "../../utils/interfaces.js";
 import {
   getAllAncestors,
   getAllProperties
-} from "../../modular/helpers/operationHelpers.js";
-import { normalizeModelPropertyName } from "../../modular/type-expressions/get-type-expression.js";
+} from "../../codegen/helpers/operationHelpers.js";
+import { normalizeModelPropertyName } from "../../codegen/type-expressions/get-type-expression.js";
 import { reportDiagnostic } from "../../lib.js";
 import { NameType, normalizeName } from "@azure-tools/rlc-common";
 

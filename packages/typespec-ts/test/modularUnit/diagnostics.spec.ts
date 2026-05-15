@@ -19,13 +19,13 @@ describe("Diagnostic reporting tests", () => {
 
     // Import the fixed modules to ensure they compile
     const operationHelpers =
-      await import("../../src/modular/helpers/operationHelpers.js");
-    const emitModels = await import("../../src/modular/emitModels.js");
-    const buildRootIndex = await import("../../src/modular/buildRootIndex.js");
+      await import("../../src/codegen/helpers/operationHelpers.js");
+    const emitModels = await import("../../src/codegen/emitModels.js");
+    const buildRootIndex = await import("../../src/codegen/buildRootIndex.js");
     const serializerFunction =
-      await import("../../src/modular/serialization/buildSerializerFunction.js");
+      await import("../../src/codegen/serialization/buildSerializerFunction.js");
     const deserializerFunction =
-      await import("../../src/modular/serialization/buildDeserializerFunction.js");
+      await import("../../src/codegen/serialization/buildDeserializerFunction.js");
     const emitUtil = await import("../../src/utils/emitUtil.js");
 
     // Basic checks that modules loaded successfully

@@ -1,11 +1,11 @@
 import { describe, it, beforeEach, afterAll, assert } from "vitest";
 
 import { NoTarget } from "@typespec/compiler";
-import { buildModelDeserializer } from "../../src/modular/serialization/buildDeserializerFunction.js";
-import { buildModelSerializer } from "../../src/modular/serialization/buildSerializerFunction.js";
-import { getParameterMap } from "../../src/modular/helpers/operationHelpers.js";
-import { buildSubClientIndexFile } from "../../src/modular/buildRootIndex.js";
-import { visitPackageTypes } from "../../src/modular/emitModels.js";
+import { buildModelDeserializer } from "../../src/codegen/serialization/buildDeserializerFunction.js";
+import { buildModelSerializer } from "../../src/codegen/serialization/buildSerializerFunction.js";
+import { getParameterMap } from "../../src/codegen/helpers/operationHelpers.js";
+import { buildSubClientIndexFile } from "../../src/codegen/buildRootIndex.js";
+import { visitPackageTypes } from "../../src/codegen/emitModels.js";
 import { provideContext } from "../../src/contextManager.js";
 import { SdkContext } from "../../src/utils/interfaces.js";
 import { UsageFlags } from "@azure-tools/typespec-client-generator-core";

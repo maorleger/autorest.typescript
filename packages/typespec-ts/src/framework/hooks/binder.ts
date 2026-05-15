@@ -15,7 +15,7 @@ import {
 } from "../load-static-helpers.js";
 import path from "path/posix";
 import { normalizePath } from "@typespec/compiler";
-import { generateLocallyUniqueName } from "../../modular/helpers/namingHelpers.js";
+import { generateLocallyUniqueName } from "../../codegen/helpers/namingHelpers.js";
 
 export interface DeclarationInfo {
   name: string;

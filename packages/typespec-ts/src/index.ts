@@ -8,7 +8,7 @@ import {
   AzurePollingDependencies,
   DefaultCoreDependencies,
   AzureTestDependencies
-} from "./modular/external-dependencies.js";
+} from "./codegen/external-dependencies.js";
 import { clearDirectory } from "./utils/fileSystemUtils.js";
 import { EmitContext, Program } from "@typespec/compiler";
 import { GenerationDirDetail, SdkContext } from "./utils/interfaces.js";
@@ -24,7 +24,7 @@ import {
   StorageCompatHelpers,
   UrlTemplateHelpers,
   XmlHelpers
-} from "./modular/static-helpers-metadata.js";
+} from "./codegen/static-helpers-metadata.js";
 import {
   RLCModel,
   RLCOptions,
@@ -72,34 +72,33 @@ import {
 import {
   buildRootIndex,
   buildSubClientIndexFile
-} from "./modular/buildRootIndex.js";
+} from "./codegen/buildRootIndex.js";
 import { emitContentByBuilder, emitModels } from "./utils/emitUtil.js";
 import { provideContext, useContext } from "./contextManager.js";
 
 import { EmitterOptions } from "./lib.js";
-import { ModularEmitterOptions } from "./modular/interfaces.js";
+import { ModularEmitterOptions } from "./codegen/interfaces.js";
 import { Project } from "ts-morph";
-import { buildClassicOperationFiles } from "./modular/buildClassicalOperationGroups.js";
-import { buildClassicalClient } from "./modular/buildClassicalClient.js";
-import {
-  getClientContextPath,
-  buildClientContext
-} from "./modular/buildClientContext.js";
-import { buildApiOptions } from "./modular/emitModelsOptions.js";
-import { buildOperationFiles } from "./modular/buildOperations.js";
-import { buildRestorePoller } from "./modular/buildRestorePoller.js";
-import { buildSubpathIndexFile } from "./modular/buildSubpathIndex.js";
+import { buildClassicOperationFiles } from "./codegen/buildClassicalOperationGroups.js";
+import { buildClassicalClient } from "./codegen/buildClassicalClient.js";
+import { getClientContextPath } from "./codegen/buildClientContext.js";
+import { adaptSingleClient, adaptSettings } from "./tcgcadapter/adapter.js";
+import { emitFromCodeModel } from "./codegen/emitter.js";
+import { buildApiOptions } from "./codegen/emitModelsOptions.js";
+import { buildOperationFiles } from "./codegen/buildOperations.js";
+import { buildRestorePoller } from "./codegen/buildRestorePoller.js";
+import { buildSubpathIndexFile } from "./codegen/buildSubpathIndex.js";
 import {
   createSdkContext,
   listAllServiceNamespaces,
   SdkClientType,
   SdkServiceOperation
 } from "@azure-tools/typespec-client-generator-core";
-import { transformModularEmitterOptions } from "./modular/buildModularOptions.js";
-import { emitLoggerFile } from "./modular/emitLoggerFile.js";
-import { emitTypes, emitNonModelResponseTypes } from "./modular/emitModels.js";
+import { transformModularEmitterOptions } from "./codegen/buildModularOptions.js";
+import { emitLoggerFile } from "./codegen/emitLoggerFile.js";
+import { emitTypes, emitNonModelResponseTypes } from "./codegen/emitModels.js";
 import { existsSync } from "fs";
-import { getModuleExports } from "./modular/buildProjectFiles.js";
+import { getModuleExports } from "./codegen/buildProjectFiles.js";
 import {
   getClientHierarchyMap,
   getRLCClients,
@@ -107,15 +106,15 @@ import {
 } from "./utils/clientUtils.js";
 import { basename, join } from "path";
 import { loadStaticHelpers } from "./framework/load-static-helpers.js";
-import { packageUsesXmlSerialization } from "./modular/serialization/buildXmlSerializerFunction.js";
+import { packageUsesXmlSerialization } from "./codegen/serialization/buildXmlSerializerFunction.js";
 import { provideBinder } from "./framework/hooks/binder.js";
 import { provideSdkTypes } from "./framework/hooks/sdkTypes.js";
 import { transformRLCModel } from "./transform/transform.js";
 import { transformRLCOptions } from "./transform/transfromRLCOptions.js";
-import { emitSamples } from "./modular/emitSamples.js";
-import { emitTests } from "./modular/emitTests.js";
+import { emitSamples } from "./codegen/emitSamples.js";
+import { emitTests } from "./codegen/emitTests.js";
 import { generateCrossLanguageDefinitionFile } from "./utils/crossLanguageDef.js";
-import { getClassicalClientName } from "./modular/helpers/namingHelpers.js";
+import { getClassicalClientName } from "./codegen/helpers/namingHelpers.js";
 
 export * from "./lib.js";
 
@@ -358,7 +357,16 @@ export async function $onEmit(context: EmitContext) {
       await renameClientName(subClient[1], modularEmitterOptions);
       buildApiOptions(dpgContext, subClient, modularEmitterOptions);
       buildOperationFiles(dpgContext, subClient, modularEmitterOptions);
-      buildClientContext(dpgContext, subClient, modularEmitterOptions);
+      // Adapter → code model → codegen for client context (proof of pattern)
+      const tsClient = adaptSingleClient(
+        subClient,
+        dpgContext,
+        modularEmitterOptions
+      );
+      emitFromCodeModel(project, {
+        clients: [tsClient],
+        settings: adaptSettings(dpgContext, modularEmitterOptions)
+      });
       buildRestorePoller(dpgContext, subClient, modularEmitterOptions);
       if (dpgContext.rlcOptions?.hierarchyClient) {
         buildSubpathIndexFile(modularEmitterOptions, "api", subClient, {

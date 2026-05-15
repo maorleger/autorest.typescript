@@ -22,7 +22,7 @@ import {
 } from "@azure-tools/rlc-common";
 import { useContext } from "../contextManager.js";
 import { join } from "path";
-import { AzureIdentityDependencies } from "../modular/external-dependencies.js";
+import { AzureIdentityDependencies } from "../codegen/external-dependencies.js";
 import { reportDiagnostic } from "../index.js";
 import { NoTarget } from "@typespec/compiler";
 import {

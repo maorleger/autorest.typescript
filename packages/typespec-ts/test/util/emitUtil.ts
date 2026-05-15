@@ -15,8 +15,8 @@ import {
   emitTypes,
   emitNonModelResponseTypes,
   getModelsPath
-} from "../../src/modular/emitModels.js";
-import { buildApiOptions } from "../../src/modular/emitModelsOptions.js";
+} from "../../src/codegen/emitModels.js";
+import { buildApiOptions } from "../../src/codegen/emitModelsOptions.js";
 import {
   compileTypeSpecFor,
   createDpgContextTestHelper,
@@ -25,10 +25,10 @@ import {
 } from "./testUtil.js";
 import { transformUrlInfo } from "../../src/transform/transform.js";
 
-import { buildClassicalClient } from "../../src/modular/buildClassicalClient.js";
-import { buildClientContext } from "../../src/modular/buildClientContext.js";
-import { buildOperationFiles } from "../../src/modular/buildOperations.js";
-import { transformModularEmitterOptions } from "../../src/modular/buildModularOptions.js";
+import { buildClassicalClient } from "../../src/codegen/buildClassicalClient.js";
+import { buildClientContext } from "../../src/codegen/buildClientContext.js";
+import { buildOperationFiles } from "../../src/codegen/buildOperations.js";
+import { transformModularEmitterOptions } from "../../src/codegen/buildModularOptions.js";
 import { expectDiagnosticEmpty } from "@typespec/compiler/testing";
 import { getCredentialInfo } from "../../src/transform/transfromRLCOptions.js";
 import {
@@ -41,12 +41,12 @@ import { transformSchemas } from "../../src/transform/transformSchemas.js";
 import { transformToParameterTypes } from "../../src/transform/transformParameters.js";
 import { transformToResponseTypes } from "../../src/transform/transformResponses.js";
 import { useBinder } from "../../src/framework/hooks/binder.js";
-import { emitSamples } from "../../src/modular/emitSamples.js";
-import { emitTests } from "../../src/modular/emitTests.js";
+import { emitSamples } from "../../src/codegen/emitSamples.js";
+import { emitTests } from "../../src/codegen/emitTests.js";
 import { renameClientName } from "../../src/index.js";
-import { buildRootIndex } from "../../src/modular/buildRootIndex.js";
+import { buildRootIndex } from "../../src/codegen/buildRootIndex.js";
 import { useContext } from "../../src/contextManager.js";
-import { buildSubpathIndexFile } from "../../src/modular/buildSubpathIndex.js";
+import { buildSubpathIndexFile } from "../../src/codegen/buildSubpathIndex.js";
 
 export async function emitPageHelperFromTypeSpec(
   tspContent: string,
